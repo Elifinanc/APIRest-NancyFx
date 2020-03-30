@@ -25,10 +25,10 @@ namespace APINancy_Quete2
             Get("/users/delete/{UserId:int}", parameters => DeleteUser(parameters.UserId));
 
             // Add a new user
-            Get("/new/{Fistname:string}/{Password:string}", parameters => PutNewUser(parameters.Firstname, parameters.Password));
+            Get("/new/{Firstname}/{Password}", parameters => PutNewUser(parameters.Firstname, parameters.Password));
 
             // Authentify a user
-            Get("/authentify/{Fistname:string}/{Password:string}", parameters => AuthentifyUser(parameters.Firstname, parameters.Password));
+            Get("/authentify/{Firstname}/{Password}", parameters => AuthentifyUser(parameters.Firstname, parameters.Password));
         }
 
         public string ReturnAllUsers()
@@ -69,6 +69,19 @@ namespace APINancy_Quete2
                 Output.Message = "Delete user :" + selectedUser.Firstname;
 
                 context.User.Remove(selectedUser);
+
+                //je réactualise les UserId sachant qu'un à été supprimé, pour garder la continuité des nombres en UserId
+                /*var allRemainingUsersWithBiggerId = from u in context.User
+                                        where u.UserId > userId
+                                        select u;
+                foreach (User user in allRemainingUsersWithBiggerId)
+                {
+                    context.User.Remove(user);
+                    user.UserId = user.UserId - 1;
+                }
+
+                context.AddRange(allRemainingUsersWithBiggerId);*/
+
                 context.SaveChanges();
 
                 string output = JsonConvert.SerializeObject(Output.Message);
@@ -76,7 +89,7 @@ namespace APINancy_Quete2
             }
         }
 
-        public string PutNewUser(dynamic FirstName, dynamic Password)
+        public string PutNewUser(object Firstname, object Password)
         {
             using (var context = new UserContext())
             {
@@ -88,8 +101,8 @@ namespace APINancy_Quete2
                 User newUser = new User()
                 {
                     UserId = NewUserId,
-                    Firstname = FirstName,
-                    Password = Password
+                    Firstname = Firstname.ToString(),
+                    Password = Password.ToString()
                 };
 
                 context.Add(newUser);
@@ -100,7 +113,7 @@ namespace APINancy_Quete2
             }
         }
 
-        public string AuthentifyUser(dynamic FirstName, dynamic Password)
+        public string AuthentifyUser(object Firstname, object Password)
         {
             using (var context = new UserContext())
             {
@@ -115,15 +128,15 @@ namespace APINancy_Quete2
 
                 JsonMessage Output = new JsonMessage();
 
-                string firstName = Convert.ToString(FirstName);
+                string firstname = Firstname.ToString();
 
-                if (usersName.Contains(firstName))
+                if (usersName.Contains(firstname))
                 {
                     var selectedUser = (from u in context.User
-                                        where u.Firstname == firstName
+                                        where u.Firstname == firstname
                                         select u).FirstOrDefault();
 
-                    if (selectedUser.Password == Password)
+                    if (selectedUser.Password == Password.ToString())
                     {
                         Output.Message = "Ok, you have entered the correct password";
                     }
