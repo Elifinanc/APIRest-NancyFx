@@ -22,13 +22,13 @@ namespace APINancy_Quete2
             Get("/users/{UserId:int}", parameters => ReturnUserData(parameters.UserId));
 
             // Delete an existing user            
-            Delete("/users/delete/{UserId:int}", parameters => DeleteUser(parameters.UserId));
+            Get("/users/delete/{UserId:int}", parameters => DeleteUser(parameters.UserId));
 
             // Add a new user
-            Put("/users/new/{Fistname:string}/{Lastname:string}/{Password:string}", parameters => PutNewUser(parameters.Firstname, parameters.Lastname, parameters.Password));
+            Get("/new/{Fistname:string}/{Password:string}", parameters => PutNewUser(parameters.Firstname, parameters.Password));
 
             // Authentify a user
-            Post("/authentify/{Fistname:string}/{Password:string}", parameters => AuthentifyUser(parameters.Firstname, parameters.Password));
+            Get("/authentify/{Fistname:string}/{Password:string}", parameters => AuthentifyUser(parameters.Firstname, parameters.Password));
         }
 
         public string ReturnAllUsers()
@@ -56,20 +56,27 @@ namespace APINancy_Quete2
             }
         }
 
-        public void DeleteUser(int userId)
+        public string DeleteUser(int userId)
         {
             using (var context = new UserContext())
             {
+                JsonMessage Output = new JsonMessage();
+
                 var selectedUser = (from u in context.User
                                     where u.UserId == userId
                                     select u).FirstOrDefault();
 
+                Output.Message = "Delete user :" + selectedUser.Firstname;
+
                 context.User.Remove(selectedUser);
                 context.SaveChanges();
+
+                string output = JsonConvert.SerializeObject(Output.Message);
+                return output;
             }
         }
 
-        public string PutNewUser(dynamic FirstName, dynamic LastName, dynamic Password)
+        public string PutNewUser(dynamic FirstName, dynamic Password)
         {
             using (var context = new UserContext())
             {
@@ -82,7 +89,6 @@ namespace APINancy_Quete2
                 {
                     UserId = NewUserId,
                     Firstname = FirstName,
-                    Lastname = LastName,
                     Password = Password
                 };
 

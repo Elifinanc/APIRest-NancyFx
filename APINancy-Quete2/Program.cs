@@ -12,18 +12,6 @@ namespace APINancy_Quete2
     {
         static void Main(string[] args)
         {
-            HostConfiguration hostConfiguration = new HostConfiguration()
-            {
-                UrlReservations = new UrlReservations() { CreateAutomatically = true },
-            };
-            using (var host = new NancyHost(hostConfiguration, new Uri("http://localhost:1234")))
-            {
-                host.Start();
-                Console.WriteLine("Running on http://localhost:1234");
-                Console.ReadLine();
-                host.Stop();
-            }
-
             using (var context = new UserContext())
             {
                 context.Database.EnsureDeleted();
@@ -37,7 +25,6 @@ namespace APINancy_Quete2
                     {
                         UserId = i,
                         Firstname = "UserName" + i,
-                        Lastname = "UserLastName" + i,
                         Password = "Password" + random.Next(1, 200)
                     };
                     userList.Add(user);
@@ -45,6 +32,18 @@ namespace APINancy_Quete2
 
                 context.AddRange(userList);
                 context.SaveChanges();
+            }
+
+            HostConfiguration hostConfiguration = new HostConfiguration()
+            {
+                UrlReservations = new UrlReservations() { CreateAutomatically = true },
+            };
+            using (var host = new NancyHost(hostConfiguration, new Uri("http://localhost:1234")))
+            {
+                host.Start();
+                Console.WriteLine("Running on http://localhost:1234");
+                Console.ReadLine();
+                host.Stop();
             }
         }
     }
